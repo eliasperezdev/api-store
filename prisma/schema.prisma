@@ -1,16 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
-}
-
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
 }
 
 model Category {
@@ -30,13 +24,12 @@ model Product {
   orderItems  OrderItem[]
 }
 
-
 model Order {
   id           Int         @id @default(autoincrement())
   createdAt    DateTime    @default(now())
   status       OrderStatus @default(PENDING)
   total        Decimal
-  paymentId    String? 
+  paymentId    String?
   items        OrderItem[]
 }
 
@@ -47,7 +40,7 @@ model OrderItem {
   productId Int
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
-  price     Decimal 
+  price     Decimal
 }
 
 enum OrderStatus {
