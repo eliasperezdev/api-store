@@ -2,11 +2,11 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import dotenv from 'dotenv';
 
-import { getProducts, getCategories } from './controllers/product.controller.js';
+import { getProducts, getCategories, getProductById } from './controllers/product.controller.js';
 import { createOrder, receiveWebhook } from './controllers/payment.controller.js';
 
 dotenv.config();
-const port = Number(process.env.PORT)|| 3000;
+const port = Number(process.env.PORT)|| 4000;
 
 const fastify = Fastify({ logger: true });
 
@@ -18,6 +18,7 @@ const start = async () => {
 
     fastify.get('/products', getProducts);
     fastify.get('/categories', getCategories);
+    fastify.get('/products/:id', getProductById);
 
     fastify.get('/success', async (req, reply) => {
       return reply.type('text/html').send(`

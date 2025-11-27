@@ -9,6 +9,10 @@ interface GetProductsQuery {
   search?: string;
 }
 
+interface GetProductParams {
+  id: string;
+}
+
 export const getProducts = async (
   req: FastifyRequest<{ Querystring: GetProductsQuery }>, 
   reply: FastifyReply
@@ -49,6 +53,35 @@ export const getProducts = async (
   } catch (error) {
     console.error(error);
     return reply.status(500).send({ error: 'Error al obtener productos' });
+  }
+};
+
+export const getProductById = async (
+  req: FastifyRequest<{ Params: GetProductParams }>, 
+  reply: FastifyReply
+) => {
+  const { id } = req.params;
+
+  try {
+    const product = await prisma.product.findUnique({
+      where: { 
+        id: Number(id) // Convertimos string a number
+      },
+      include: {
+        category: true // Traemos la info de su categoría también
+      }
+    });
+
+    // Si no existe, devolvemos 404 Not Found
+    if (!product) {
+      return reply.status(404).send({ error: 'Producto no encontrado' });
+    }
+
+    return reply.send(product);
+
+  } catch (error) {
+    console.error(error);
+    return reply.status(500).send({ error: 'Error al obtener el producto' });
   }
 };
 
