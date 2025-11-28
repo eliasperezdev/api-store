@@ -4,15 +4,24 @@ import { preference, payment } from '../lib/mercadopago.js';
 
 const prisma = new PrismaClient();
 
+interface CheckoutItem {
+  id: string | number;
+  quantity: number;
+}
+
 interface CheckoutBody {
-  items: {
-    productId: number;
-    quantity: number;
-  }[];
+  items: CheckoutItem[];
 }
 
 export const createOrder = async (req: FastifyRequest<{ Body: CheckoutBody }>, reply: FastifyReply) => {
+
+  
   const { items } = req.body;
+
+
+    console.log("--------------");
+  console.log("Items recibidos:", JSON.stringify(items, null, 2));
+  console.log("------------");
 
   try {
     let total = 0;
@@ -20,10 +29,11 @@ export const createOrder = async (req: FastifyRequest<{ Body: CheckoutBody }>, r
     const dbOrderItems = [];
 
     for (const item of items) {
-      const product = await prisma.product.findUnique({ where: { id: item.productId } });
+      const productId = Number(item.id);
+      const product = await prisma.product.findUnique({ where: { id: productId } });
       
       if (!product) {
-        throw new Error(`Producto ID ${item.productId} no encontrado`);
+        throw new Error(`Producto ID ${productId} no encontrado`);
       }
 
       total += Number(product.price) * item.quantity;
@@ -84,6 +94,8 @@ const result = await preference.create({
 export const receiveWebhook = async (req: FastifyRequest, reply: FastifyReply) => {
   const query = req.query as any;
   const type = query.type || query.topic;
+  console.log(query);
+  
 
   if (type === 'payment') {
     const paymentId = query['data.id'] || query.id;

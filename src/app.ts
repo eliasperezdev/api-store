@@ -1,9 +1,11 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import formBody from '@fastify/formbody';
 import dotenv from 'dotenv';
 
 import { getProducts, getCategories, getProductById } from './controllers/product.controller.js';
 import { createOrder, receiveWebhook } from './controllers/payment.controller.js';
+import { getOrderById } from './controllers/order.controller.js';
 
 dotenv.config();
 const port = Number(process.env.PORT)|| 4000;
@@ -45,9 +47,14 @@ const start = async () => {
 
     fastify.post('/checkout', createOrder);
     fastify.post('/webhook', receiveWebhook);
+    fastify.get('/orders/:id', getOrderById);
 
   try {
-    await fastify.listen({ port });
+    await fastify.register(formBody);
+    await fastify.listen({ 
+      port: 4000,
+      host: '0.0.0.0' 
+    });
     console.log(`Servidor escuchando en http://localhost:${port}`);
   } catch (err) {
     fastify.log.error(err);

@@ -60,19 +60,21 @@ export const getProductById = async (
   req: FastifyRequest<{ Params: GetProductParams }>, 
   reply: FastifyReply
 ) => {
+  console.log("------------------------");
+
+  console.log(req.params);
+  
   const { id } = req.params;
 
   try {
     const product = await prisma.product.findUnique({
       where: { 
-        id: Number(id) // Convertimos string a number
+        id: Number(id) 
       },
       include: {
-        category: true // Traemos la info de su categoría también
+        category: true
       }
     });
-
-    // Si no existe, devolvemos 404 Not Found
     if (!product) {
       return reply.status(404).send({ error: 'Producto no encontrado' });
     }
