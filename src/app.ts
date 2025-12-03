@@ -72,7 +72,7 @@ const start = async () => {
   try {
     await fastify.register(formBody);
     await fastify.listen({ 
-      port: 4000,
+      port: port,
       host: '0.0.0.0' 
     });
     console.log(`Servidor escuchando en http://localhost:${port}`);
