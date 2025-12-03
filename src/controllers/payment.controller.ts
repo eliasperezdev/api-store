@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { PrismaClient } from '@prisma/client';
 import { preference, payment } from '../lib/mercadopago.js';
+import { sendOrderEmail } from '../lib/mailer.js';
 
 const prisma = new PrismaClient();
 
@@ -11,17 +12,12 @@ interface CheckoutItem {
 
 interface CheckoutBody {
   items: CheckoutItem[];
+  email: string;
 }
 
 export const createOrder = async (req: FastifyRequest<{ Body: CheckoutBody }>, reply: FastifyReply) => {
-
   
-  const { items } = req.body;
-
-
-    console.log("--------------");
-  console.log("Items recibidos:", JSON.stringify(items, null, 2));
-  console.log("------------");
+  const { items, email  } = req.body;
 
   try {
     let total = 0;
@@ -57,6 +53,7 @@ export const createOrder = async (req: FastifyRequest<{ Body: CheckoutBody }>, r
       data: {
         total: total,
         status: 'PENDING',
+        email: email,
         items: {
           create: dbOrderItems
         }
@@ -68,7 +65,6 @@ export const createOrder = async (req: FastifyRequest<{ Body: CheckoutBody }>, r
       external_reference: newOrder.id.toString(),
       notification_url: `${process.env.WEBHOOK_URL}/webhook`,
       
-      // Asegúrate de que back_urls esté al mismo nivel que items
       back_urls: {
         success: `${process.env.WEBHOOK_URL}/success`,
         failure: `${process.env.WEBHOOK_URL}/failure`,
@@ -108,12 +104,14 @@ export const receiveWebhook = async (req: FastifyRequest, reply: FastifyReply) =
 
       if (externalReference && status === 'approved') {
 
+        let orderDataForEmail: any = null;
+
         const order = await prisma.order.findUnique({
             where: { id: parseInt(externalReference) },
-            include: { items: true } // Traemos los items
+            include: { items: { include: { product: true } } }
           });
 
-          if (!order) return; // Si no existe, salimos
+          if (!order) return; 
 
           if (order.status === 'PAID') return;
 
@@ -135,6 +133,8 @@ export const receiveWebhook = async (req: FastifyRequest, reply: FastifyReply) =
               }
             });
           }
+          
+          orderDataForEmail = order;
 
         await prisma.order.update({
           where: { id: parseInt(externalReference) },
@@ -143,6 +143,16 @@ export const receiveWebhook = async (req: FastifyRequest, reply: FastifyReply) =
             paymentId: paymentId.toString()
           }
         });
+        if (orderDataForEmail) {
+            console.log("Intentando enviar correo a:", orderDataForEmail.email);
+            
+            sendOrderEmail(
+                orderDataForEmail.email, 
+                orderDataForEmail.id.toString(), 
+                orderDataForEmail.items, 
+                Number(orderDataForEmail.total)
+            );
+        }
         console.log(`✅ Orden ${externalReference} pagada correctamente.`);
       }
     } catch (error) {

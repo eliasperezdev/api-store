@@ -12,8 +12,26 @@ const port = Number(process.env.PORT)|| 4000;
 
 const fastify = Fastify({ logger: true });
 
-fastify.register(cors, { 
-  origin: true
+
+fastify.register(cors, {
+  origin: (origin, cb) => {
+    const allowedOrigins = [
+      process.env.FRONTEND_URL?.replace(/\/$/, "") 
+    ];
+
+    if (!origin) return cb(null, true);
+
+    const cleanOrigin = origin.replace(/\/$/, "");
+
+    if (allowedOrigins.includes(cleanOrigin)) {
+      cb(null, true);
+    } else {
+      console.error("CORS bloqueado:", origin);
+      cb(new Error("CORS no permitido"), false);
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
 });
 
 const start = async () => {
@@ -23,11 +41,13 @@ const start = async () => {
     fastify.get('/products/:id', getProductById);
 
     fastify.get('/success', async (req, reply) => {
-      return reply.type('text/html').send(`
-        <h1>¡Pago Exitoso! 🥳</h1>
-        <p>Gracias por tu compra. Ya hemos registrado tu pedido.</p>
-        <a href="http://localhost:5173">Volver a la tienda</a>
-      `);
+      const query = req.query as any;
+      
+      const orderId = query.external_reference; 
+      
+      const front = process.env.FRONTEND_URL;
+      
+      return reply.redirect(`${front}/success?orderId=${orderId}`);
     });
 
     fastify.get('/failure', async (req, reply) => {

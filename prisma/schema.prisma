@@ -18,6 +18,7 @@ model Product {
   name        String
   description String?
   price       Decimal
+  image       String      @default("https://placehold.co/600x400")
   stock       Int
   categoryId  Int
   category    Category    @relation(fields: [categoryId], references: [id])
@@ -30,6 +31,8 @@ model Order {
   status       OrderStatus @default(PENDING)
   total        Decimal
   paymentId    String?
+  email        String
+  name         String?
   items        OrderItem[]
 }
 
