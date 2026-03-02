@@ -1,7 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 interface GetProductsQuery {
   categoryId?: string;
@@ -87,7 +85,7 @@ export const getProductById = async (
   }
 };
 
-export const getCategories = async (req: FastifyRequest, reply: FastifyReply) => {
+export const getCategories = async (_req: FastifyRequest, reply: FastifyReply) => {
   const categories = await prisma.category.findMany();
   return reply.send(categories);
 };

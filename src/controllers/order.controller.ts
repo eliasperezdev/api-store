@@ -1,7 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 export const getOrderById = async (req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
   const { id } = req.params;

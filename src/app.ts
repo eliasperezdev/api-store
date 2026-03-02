@@ -6,6 +6,8 @@ import dotenv from 'dotenv';
 import { getProducts, getCategories, getProductById } from './controllers/product.controller.js';
 import { createOrder, receiveWebhook } from './controllers/payment.controller.js';
 import { getOrderById } from './controllers/order.controller.js';
+const front = process.env.FRONTEND_URL;
+
 
 dotenv.config();
 const port = Number(process.env.PORT)|| 3000;
@@ -18,7 +20,7 @@ fastify.register(cors, {
     const allowedOrigins = [
       process.env.FRONTEND_URL?.replace(/\/$/, "") 
     ];
-4
+
     if (!origin) return cb(null, true);
 
     const cleanOrigin = origin.replace(/\/$/, "");
@@ -45,7 +47,6 @@ const start = async () => {
       
       const orderId = query.external_reference; 
       
-      const front = process.env.FRONTEND_URL;
       
       return reply.redirect(`${front}/success?orderId=${orderId}`);
     });
@@ -54,7 +55,7 @@ const start = async () => {
       return reply.type('text/html').send(`
         <h1>Pago Fallido 😢</h1>
         <p>Hubo un problema con el pago.</p>
-        <a href="http://localhost:5173">Intentar de nuevo</a>
+        <a href="${front}">Intentar de nuevo</a>
       `);
     });
 

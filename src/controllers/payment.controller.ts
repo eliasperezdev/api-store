@@ -1,9 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 import { preference, payment } from '../lib/mercadopago.js';
 import { sendOrderEmail } from '../lib/mailer.js';
-
-const prisma = new PrismaClient();
 
 interface CheckoutItem {
   id: string | number;
@@ -136,13 +134,6 @@ export const receiveWebhook = async (req: FastifyRequest, reply: FastifyReply) =
           
           orderDataForEmail = order;
 
-        await prisma.order.update({
-          where: { id: parseInt(externalReference) },
-          data: { 
-            status: 'PAID',
-            paymentId: paymentId.toString()
-          }
-        });
         if (orderDataForEmail) {
             console.log("Intentando enviar correo a:", orderDataForEmail.email);
             
