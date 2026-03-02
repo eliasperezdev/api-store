@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { prisma } from '../lib/prisma.js';
+import * as productService from '../services/product.service.js';
 
 interface GetProductsQuery {
   categoryId?: string;
@@ -12,42 +12,12 @@ interface GetProductParams {
 }
 
 export const getProducts = async (
-  req: FastifyRequest<{ Querystring: GetProductsQuery }>, 
+  req: FastifyRequest<{ Querystring: GetProductsQuery }>,
   reply: FastifyReply
 ) => {
-  const { categoryId, sort, search } = req.query;
-
   try {
-    const whereClause: any = {};
-
-    if (categoryId) {
-      whereClause.categoryId = Number(categoryId);
-    }
-
-    if (search) {
-      whereClause.name = {
-        contains: search
-      };
-    }
-
-    const orderByClause: any = [];
-    
-    if (sort) {
-      orderByClause.push({ price: sort });
-    } else {
-      orderByClause.push({ id: 'asc' });
-    }
-
-    const products = await prisma.product.findMany({
-      where: whereClause,
-      orderBy: orderByClause,
-      include: {
-        category: true
-      }
-    });
-
+    const products = await productService.getProducts(req.query);
     return reply.send(products);
-
   } catch (error) {
     console.error(error);
     return reply.status(500).send({ error: 'Error al obtener productos' });
@@ -55,30 +25,15 @@ export const getProducts = async (
 };
 
 export const getProductById = async (
-  req: FastifyRequest<{ Params: GetProductParams }>, 
+  req: FastifyRequest<{ Params: GetProductParams }>,
   reply: FastifyReply
 ) => {
-  console.log("------------------------");
-
-  console.log(req.params);
-  
-  const { id } = req.params;
-
   try {
-    const product = await prisma.product.findUnique({
-      where: { 
-        id: Number(id) 
-      },
-      include: {
-        category: true
-      }
-    });
+    const product = await productService.getProductById(req.params.id);
     if (!product) {
       return reply.status(404).send({ error: 'Producto no encontrado' });
     }
-
     return reply.send(product);
-
   } catch (error) {
     console.error(error);
     return reply.status(500).send({ error: 'Error al obtener el producto' });
@@ -86,6 +41,11 @@ export const getProductById = async (
 };
 
 export const getCategories = async (_req: FastifyRequest, reply: FastifyReply) => {
-  const categories = await prisma.category.findMany();
-  return reply.send(categories);
+  try {
+    const categories = await productService.getCategories();
+    return reply.send(categories);
+  } catch (error) {
+    console.error(error);
+    return reply.status(500).send({ error: 'Error al obtener categorías' });
+  }
 };
