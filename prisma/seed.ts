@@ -3,15 +3,11 @@ import {PrismaClient} from "@prisma/client";
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 Iniciando el seeding...')
-
 
   await prisma.orderItem.deleteMany()
   await prisma.order.deleteMany()
   await prisma.product.deleteMany()
   await prisma.category.deleteMany()
-
-  console.log('🧹 Base de datos limpiada.')
 
 const categoriesData = [
   {
@@ -125,10 +121,9 @@ const categoriesData = [
     const category = await prisma.category.create({
       data: cat,
     })
-    console.log(`✅ Categoría creada: ${category.name} con sus productos.`)
   }
 
-  console.log('🌱 Seeding finalizado con éxito.')
+  console.log('Seed finalizado con éxito.')
 }
 
 main()
