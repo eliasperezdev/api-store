@@ -35,6 +35,8 @@ fastify.register(productRoutes);
 fastify.register(paymentRoutes);
 fastify.register(orderRoutes);
 
+fastify.get('/health', async () => ({ status: 'ok' }));
+
 const start = async () => {
   try {
     const port = Number(process.env.PORT) || 3000;
