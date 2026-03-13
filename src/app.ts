@@ -3,6 +3,8 @@ dotenv.config();
 
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import formBody from '@fastify/formbody';
 
 import { env } from './lib/env.js';
@@ -29,6 +31,8 @@ fastify.register(cors, {
   credentials: true,
 });
 
+fastify.register(helmet);
+fastify.register(rateLimit, { max: 100, timeWindow: '1 minute' });
 fastify.register(formBody);
 fastify.register(productRoutes);
 fastify.register(paymentRoutes);
