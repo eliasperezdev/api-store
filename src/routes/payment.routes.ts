@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { createOrder, receiveWebhook } from '../controllers/payment.controller.js';
+import { env } from '../lib/env.js';
 
 export const paymentRoutes = async (fastify: FastifyInstance) => {
   fastify.post('/checkout', createOrder);
@@ -8,15 +9,14 @@ export const paymentRoutes = async (fastify: FastifyInstance) => {
   fastify.get('/success', async (req, reply) => {
     const query = req.query as any;
     const orderId = query.external_reference;
-    return reply.redirect(`${process.env.FRONTEND_URL}/success?orderId=${orderId}`);
+    return reply.redirect(`${env.FRONTEND_URL}/success?orderId=${orderId}`);
   });
 
   fastify.get('/failure', async (_req, reply) => {
-    const front = process.env.FRONTEND_URL;
     return reply.type('text/html').send(`
       <h1>Pago Fallido 😢</h1>
       <p>Hubo un problema con el pago.</p>
-      <a href="${front}">Intentar de nuevo</a>
+      <a href="${env.FRONTEND_URL}">Intentar de nuevo</a>
     `);
   });
 

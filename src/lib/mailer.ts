@@ -1,13 +1,11 @@
 import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { env } from './env.js';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER, 
-    pass: process.env.EMAIL_PASS, 
+    user: env.EMAIL_USER,
+    pass: env.EMAIL_PASS,
   },
 });
 
@@ -21,7 +19,7 @@ export const sendOrderEmail = async (toEmail: string, orderId: string, items: an
   `).join('');
 
   const mailOptions = {
-    from: `"Mi Tienda Web 🛒" <${process.env.EMAIL_USER}>`,
+    from: `"Mi Tienda Web 🛒" <${env.EMAIL_USER}>`,
     to: toEmail,
     subject: `¡Compra Confirmada! Orden #${orderId}`,
     html: `
@@ -38,7 +36,7 @@ export const sendOrderEmail = async (toEmail: string, orderId: string, items: an
         
         <hr>
         <p>Esperamos que disfrutes tus productos.</p>
-        <a href="${process.env.FRONTEND_URL}">Volver a la tienda</a>
+        <a href="${env.FRONTEND_URL}">Volver a la tienda</a>
       </div>
     `,
   };

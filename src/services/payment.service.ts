@@ -1,6 +1,7 @@
 import { prisma } from '../lib/prisma.js';
 import { preference, payment } from '../lib/mercadopago.js';
 import { sendOrderEmail } from '../lib/mailer.js';
+import { env } from '../lib/env.js';
 
 interface CheckoutItem {
   id: string | number;
@@ -50,11 +51,11 @@ export const createCheckoutOrder = async (items: CheckoutItem[], email: string) 
     body: {
       items: preferenceItems,
       external_reference: newOrder.id.toString(),
-      notification_url: `${process.env.WEBHOOK_URL}/webhook`,
+      notification_url: `${env.WEBHOOK_URL}/webhook`,
       back_urls: {
-        success: `${process.env.WEBHOOK_URL}/success`,
-        failure: `${process.env.WEBHOOK_URL}/failure`,
-        pending: `${process.env.WEBHOOK_URL}/pending`,
+        success: `${env.WEBHOOK_URL}/success`,
+        failure: `${env.WEBHOOK_URL}/failure`,
+        pending: `${env.WEBHOOK_URL}/pending`,
       },
       auto_return: undefined,
     },
