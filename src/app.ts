@@ -16,11 +16,18 @@ const fastify = Fastify({ logger: true });
 
 fastify.register(cors, {
   origin: (origin, cb) => {
-    const allowedOrigin = env.FRONTEND_URL.replace(/\/$/, '');
+    const allowedOrigins = env.FRONTEND_URL
+      .split(',')
+      .map((o) => o.trim().replace(/\/$/, ''));
 
     if (!origin) return cb(null, true);
 
-    if (origin.replace(/\/$/, '') === allowedOrigin) {
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    const allowed =
+      allowedOrigins.includes(normalizedOrigin) ||
+      allowedOrigins.some((o) => o.startsWith('*.') && normalizedOrigin.endsWith(o.slice(1)));
+
+    if (allowed) {
       cb(null, true);
     } else {
       fastify.log.warn({ origin }, 'CORS bloqueado');
