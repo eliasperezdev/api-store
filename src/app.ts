@@ -35,7 +35,8 @@ fastify.register(cors, {
       cb(new Error('CORS no permitido'), false);
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  preflight: true,
   credentials: true,
 });
 
